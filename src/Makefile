@@ -1,2 +1,2 @@
 build: palindrome.c
-	gcc palindrome.c -o palindrome
+	gcc palindrome.c -o palindrome -Wall
