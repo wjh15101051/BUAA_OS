@@ -72,7 +72,7 @@ int readelf(u_char *binary, int size)
 				shdr = (Elf32_Shdr *) (ptr_sh_table + Nr * sh_entry_size);
 				printf("%d:0x%x\n",Nr,shdr -> sh_addr);
 		}
-
+		// try
         return 0;
 }
 
