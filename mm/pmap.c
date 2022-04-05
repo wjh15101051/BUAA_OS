@@ -27,9 +27,9 @@ void mips_detect_memory()
 {
 	/* Step 1: Initialize basemem.
 	 * (When use real computer, CMOS tells us how many kilobytes there are). */
-
+	basemem = 64 * 1024 * 1024;
 	// Step 2: Calculate corresponding npage value.
-
+	npage = basemem / 4096;
 	printf("Physical memory: %dK available, ", (int)(maxpa / 1024));
 	printf("base = %dK, extended = %dK\n", (int)(basemem / 1024),
 			(int)(extmem / 1024));
