@@ -39,4 +39,6 @@ clean:
 		done; \
 	rm -rf *.o *~ $(vmlinux_elf)
 
+run_vmlinux:
+
 include include.mk
