@@ -40,5 +40,6 @@ clean:
 	rm -rf *.o *~ $(vmlinux_elf)
 
 run_vmlinux:
+	gxemul -E testmips -C R3000 -M 64 gxemul/vmlinux
 
 include include.mk
