@@ -93,12 +93,18 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 	/* Step 1: Get the corresponding page directory entry and page table. */
 	/* Hint: Use KADDR and PTE_ADDR to get the page table from page directory
 	 * entry value. */
+	pgdir_entryp = pgdir + PDX(va);
 
 
 	/* Step 2: If the corresponding page table is not exist and parameter `create`
 	 * is set, create one. And set the correct permission bits for this new page
 	 * table. */
-
+	if ((*pgdir_entryp & PTE_V) == 0) {
+		if (create) {
+			pgtable_entry = PADDR(alloc(BY2PG, BY2PG, 1));
+			
+		}
+	} else return 0;
 
 	/* Step 3: Get the page table entry for `va`, and return it. */
 
