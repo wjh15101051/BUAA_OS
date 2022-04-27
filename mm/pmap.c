@@ -197,12 +197,14 @@ void page_init(void)
 	for (iter = pages; page2kva(iter) < freemem; ++iter) {
 		iter -> pp_ref = 1;
 	}
+	pa2page(PADDR(TIMESTACK)) -> pp_ref = 1;
 	
 	/* Step 4: Mark the other memory as free. */
 	if (iter != &pages[PPN(PADDR(freemem))]) {
 		panic("mm/pmap.c page_init error");
 	}
 	for (; page2ppn(iter) < npage; ++iter) {
+		if (page2pa(iter) == PADDR(TIMESTACK)) continue;
 		iter -> pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, iter, pp_link);
 	}
