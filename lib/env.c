@@ -93,11 +93,10 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
     /* Hint: If envid is zero, return curenv.*/
     /* Step 1: Assign value to e using envid. */
 	if (envid == 0) {
-		e = curenv;
-	} else {
-		e = envs + ENVX(envid);
+		*penv = curenv;
+		return 0;
 	}
-
+	e = envs + ENVX(envid);
 
 	if (e->env_status == ENV_FREE || e->env_id != envid) {
 		 *penv = NULL;
@@ -242,6 +241,7 @@ env_alloc(struct Env **new, u_int parent_id)
 	e -> env_id = mkenvid(e);
 	e -> env_status = ENV_RUNNABLE;
 	e -> env_parent_id = parent_id;
+	e -> env_runs = 0;
 
     /* Step 4: Focus on initializing the sp register and cp0_status of env_tf field, located at this new Env. */
 	e -> env_tf.cp0_status = 0x10001004;
@@ -350,7 +350,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 	u_long perm = PTE_R;
 
     /* Step 1: alloc a page. */
-	if ((r = page_alloc(&p)) != 0) return;
+	if (page_alloc(&p) != 0) return;
 
     /* Step 2: Use appropriate perm to set initial stack for new Env. */
     /* Hint: Should the user-stack be writable? */
@@ -617,6 +617,17 @@ void load_icode_check() {
     assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x00000000);
     assert(*((int *)KADDR(PTE_ADDR(*pte)) + 1023) == 0x00000000);
     assert(pgdir_walk(e->env_pgdir, 0x00407000, 0, &pte) == 0);
+    assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x7f400000);
+    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 1023) == 0x00000000);
+    assert(pgdir_walk(e->env_pgdir, 0x00408000, 0, &pte) == 0);
+    assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x0000fffe);
+    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 1023) == 0x00000000);
+    assert(pgdir_walk(e->env_pgdir, 0x00409000, 0, &pte) == 0);
+    assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x00000000);
+    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 0x2aa) == 0x004099fc);
+    printf("text & data segment load right!\n");
+    /* bss        : 0x00409aac - 0x0040aab4 left closed and right open interval */
+    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 0x2ab) == 0x00000000);
     assert(*((int *)KADDR(PTE_ADDR(*pte)) + 1023) == 0x00000000);
     assert(pgdir_walk(e->env_pgdir, 0x0040a000, 0, &pte) == 0);
     assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x00000000);
