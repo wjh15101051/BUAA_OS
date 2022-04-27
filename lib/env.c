@@ -189,7 +189,7 @@ env_setup_vm(struct Env *e)
      *  See ./include/mmu.h for layout.
      *  Can you use boot_pgdir as a template?
      */
-	for (i = PDX(UTOP); i < PTE2PT; ++i) {
+	for (i = PDX(UTOP); i < PDX(ULIM); ++i) {
 		if (i == PDX(UVPT)) continue;
 		pgdir[i] = boot_pgdir[i];
 	}	
@@ -235,8 +235,10 @@ env_alloc(struct Env **new, u_int parent_id)
 
     /* Step 2: Call a certain function (has been completed just now) to init kernel memory layout for this new Env.
      *The function mainly maps the kernel address to this new Env address. */
-	r = env_setup_vm(e);
-
+	if ((r = env_setup_vm(e)) != 0) {
+		*new = NULL;
+		return r;
+	}
     /* Step 3: Initialize every field of new Env with appropriate values.*/
 	e -> env_id = mkenvid(e);
 	e -> env_status = ENV_RUNNABLE;
@@ -490,7 +492,7 @@ env_run(struct Env *e)
 	if (curenv) {
 		struct Trapframe *old;
 		old = (struct Trapframe *) (TIMESTACK - sizeof(struct Trapframe));
-		bcopy(old, &(curenv -> env_tf), sizeof(struct Trapframe));
+		bcopy((void *) old, &(curenv -> env_tf), sizeof(struct Trapframe));
 		curenv -> env_tf.pc = curenv -> env_tf.cp0_epc;
 	}
 
@@ -499,7 +501,7 @@ env_run(struct Env *e)
 	curenv -> env_runs++;
 
     /* Step 3: Use lcontext() to switch to its address space. */
-	lcontext(curenv -> env_pgdir);
+	lcontext((u_int) curenv -> env_pgdir);
 
     /* Step 4: Use env_pop_tf() to restore the environment's
      *   environment   registers and return to user mode.
@@ -595,7 +597,6 @@ void load_icode_check() {
     env_create(binary_user_check_icode_start, binary_user_check_icode_size);
     struct Env* e;
     Pte* pte;
-    u_int paddr;
     assert(envid2env(1024, &e, 0) == 0);
     /* text & data: 0x00401030 - 0x00409aac left closed and right open interval */
     assert(pgdir_walk(e->env_pgdir, 0x00401000, 0, &pte) == 0);
@@ -627,7 +628,7 @@ void load_icode_check() {
     assert(*((int *)KADDR(PTE_ADDR(*pte)) + 0x2aa) == 0x004099fc);
     printf("text & data segment load right!\n");
     /* bss        : 0x00409aac - 0x0040aab4 left closed and right open interval */
-    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 0x2ab) == 0x00000000);
+    assert(*((int *)KADDR(PTE_ADDR(*pte)) + 0x2b7) == 0x00000000);
     assert(*((int *)KADDR(PTE_ADDR(*pte)) + 1023) == 0x00000000);
     assert(pgdir_walk(e->env_pgdir, 0x0040a000, 0, &pte) == 0);
     assert(*((int *)KADDR(PTE_ADDR(*pte))) == 0x00000000);

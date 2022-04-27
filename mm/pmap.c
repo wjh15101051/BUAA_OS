@@ -198,14 +198,14 @@ void page_init(void)
 		iter -> pp_ref = 1;
 	}
 	void* timestack_page_pa = (void *) PADDR(TIMESTACK - BY2PG);
-	pa2page(timestack_page_pa) -> pp_ref = 1;
+	pa2page((u_long) timestack_page_pa) -> pp_ref = 1;
 	
 	/* Step 4: Mark the other memory as free. */
 	if (iter != &pages[PPN(PADDR(freemem))]) {
 		panic("mm/pmap.c page_init error");
 	}
 	for (; page2ppn(iter) < npage; ++iter) {
-		if (iter == pa2page(timestack_page_pa)) continue;
+		if (iter == pa2page((u_long) timestack_page_pa)) continue;
 		iter -> pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, iter, pp_link);
 	}
