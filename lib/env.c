@@ -288,7 +288,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		p = page_lookup(env -> env_pgdir, va, NULL);
 		if (p == 0) {
 			if ((r = page_alloc(&p)) != 0) return r;
-			page_insert(env -> env_pgdir, p, va, PTE_R);
+			if ((r = page_insert(env -> env_pgdir, p, va, PTE_R)) != 0) return r;
 		}
 		len = MIN(bin_size, BY2PG - offset);
 		bcopy((void *) bin, (void *) (page2kva(p) + offset), len);
@@ -297,7 +297,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	for (; i < bin_size;) {
         /* Hint: You should alloc a new page. */
 		if ((r = page_alloc(&p)) != 0) return r;
-		page_insert(env -> env_pgdir, p, va + i, PTE_R);
+		if ((r = page_insert(env -> env_pgdir, p, va + i, PTE_R)) != 0) return r;
 		len = MIN(BY2PG, bin_size - i);
 		bcopy((void *) bin + i, (void *) page2kva(p), len);
 		i += len;
@@ -309,7 +309,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		p = page_lookup(env -> env_pgdir, va + i, NULL);
 		if (p == 0) {
 			if ((r = page_alloc(&p)) != 0) return r;
-			page_insert(env -> env_pgdir, p, va + i, PTE_R);
+			if ((r = page_insert(env -> env_pgdir, p, va + i, PTE_R)) != 0) return r;
 		}
 		len = MIN(sgsize - i, BY2PG - offset);
 		bzero((void *) (page2kva(p) + offset), len);
@@ -317,7 +317,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	}
 	while (i < sgsize) {
 		if ((r = page_alloc(&p)) != 0) return r;
-		page_insert(env -> env_pgdir, p, va + i, PTE_R);
+		if ((r = page_insert(env -> env_pgdir, p, va + i, PTE_R)) != 0) return r;
 		len = MIN(BY2PG, sgsize - i);
 		bzero((void *) page2kva(p), len);
 		i += len;
@@ -361,6 +361,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 
     /* Step 3: load the binary using elf loader. */
 	r = load_elf(binary, size, &entry_point, (void *) e, load_icode_mapper);
+	if (r != 0) return;
 
     /* Step 4: Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
