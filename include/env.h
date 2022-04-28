@@ -50,8 +50,8 @@ struct Env {
 	
 	// lab3-1-Extra
 	LIST_ENTRY(Env) env_PV_link;
-	u_int env_PV_status;
-	u_int env_PV_S[3];
+	int env_PV_status;
+	int env_PV_S[3];
 };
 
 LIST_HEAD(Env_list, Env);
