@@ -23,6 +23,7 @@ static u_int asid_bitmap[2] = {0}; // 64
 // lab3-1-Extra
 int S[3] = {0};
 struct Env_list env_PV_list[3];
+struct Env* env_PV_list_lastelm[3];
 void S_init(int s, int num) {
 	S[s] = num;
 	LIST_INIT(&env_PV_list[s]);
@@ -37,7 +38,12 @@ int P(struct Env *e, int s) {
 		++e -> env_PV_S[s];
 		e -> env_PV_status = ENV_PV_HAVE;
 	} else {
-		LIST_INSERT_TAIL(&env_PV_list[s], e, env_PV_link);
+		if (LIST_EMPTY(&env_PV_list[s])) {
+			LIST_INSERT_HEAD(&env_PV_list[s], e, env_PV_link);
+		} else {
+			LIST_INSERT_AFTER(env_PV_list_lastelm[s], e, env_PV_link);
+		}
+		env_PV_list_lastelm[s] = e;
 		e -> env_PV_status = ENV_PV_WAITING;
 	}
 	return 0;
