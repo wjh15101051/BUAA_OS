@@ -20,58 +20,6 @@ extern char *KERNEL_SP;
 
 static u_int asid_bitmap[2] = {0}; // 64
 
-// lab3-1-Extra
-int S[3] = {0};
-struct Env_list env_PV_list[3];
-struct Env* env_PV_list_lastelm[3];
-void S_init(int s, int num) {
-	S[s] = num;
-	LIST_INIT(&env_PV_list[s]);
-	return;
-}
-int P(struct Env *e, int s) {
-	if (e -> env_PV_status == ENV_PV_WAITING) {
-		return -1;
-	}
-	if (S[s] > 0) {
-		--S[s];
-		++e -> env_PV_S[s];
-		e -> env_PV_status = ENV_PV_HAVE;
-	} else {
-		if (LIST_EMPTY(&env_PV_list[s])) {
-			LIST_INSERT_HEAD(&env_PV_list[s], e, env_PV_link);
-		} else {
-			LIST_INSERT_AFTER(env_PV_list_lastelm[s], e, env_PV_link);
-		}
-		env_PV_list_lastelm[s] = e;
-		e -> env_PV_status = ENV_PV_WAITING;
-	}
-	return 0;
-}
-int V(struct Env *e, int s) {
-	if (e -> env_PV_status == ENV_PV_WAITING) {
-		return -1;
-	}
-	if (e -> env_PV_S[s] != 0) --e -> env_PV_S[s];
-	++S[s];
-	if (!LIST_EMPTY(&env_PV_list[s])) {
-		struct Env *ge = LIST_FIRST(&env_PV_list[s]);
-		LIST_REMOVE(ge, env_PV_link);
-		--S[s];
-		++ge -> env_PV_S[s];
-		ge -> env_PV_status = ENV_PV_HAVE;
-	}
-        if (e -> env_PV_S[1] == 0 && e -> env_PV_S[2] == 0) {
-                e -> env_PV_status = ENV_PV_FREE;
-        } else {
-                e -> env_PV_status = ENV_PV_HAVE;
-        }
-	return 0;
-}
-int get_status(struct Env *e) {
-	return e -> env_PV_status;
-}
-
 /* Overview:
  *  This function is to allocate an unused ASID
  *
@@ -416,21 +364,6 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 
     /* Step 4: Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
-}
-
-// lab3-1-Extra
-int my_env_create()
-{
-        struct Env *e;
-    /* Step 1: Use env_alloc to alloc a new env. */
-        if (env_alloc(&e, 0) != 0) return -1;
-    /* Step 2: assign priority to the new env. */
-    /* Step 3: Use load_icode() to load the named elf binary,
-       and insert it into env_sched_list using LIST_INSERT_HEAD. */
-        LIST_INSERT_HEAD(&env_sched_list[0], e, env_sched_link);
-	e -> env_PV_S[1] = e -> env_PV_S[2] = 0;
-	e -> env_PV_status = ENV_PV_FREE;
-	return e -> env_id;
 }
 
 /* Overview:

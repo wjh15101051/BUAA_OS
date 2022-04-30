@@ -18,11 +18,6 @@
 #define ENV_RUNNABLE		1
 #define ENV_NOT_RUNNABLE	2
 
-// lab3-1-Extra
-#define ENV_PV_WAITING 1
-#define ENV_PV_HAVE 2
-#define ENV_PV_FREE 3
-
 struct Env {
 	struct Trapframe env_tf;        // Saved registers
 	LIST_ENTRY(Env) env_link;       // Free list
@@ -48,10 +43,6 @@ struct Env {
 	u_int env_runs;			// number of times been env_run'ed
 	u_int env_nop;                  // align to avoid mul instruction
 	
-	// lab3-1-Extra
-	LIST_ENTRY(Env) env_PV_link;
-	int env_PV_status;
-	int env_PV_S[3];
 };
 
 LIST_HEAD(Env_list, Env);
@@ -69,12 +60,6 @@ void env_destroy(struct Env *e);
 int envid2env(u_int envid, struct Env **penv, int checkperm);
 void env_run(struct Env *e);
 
-// lab3-1-Extra
-void S_init(int s, int num);
-int P(struct Env *e, int s);
-int V(struct Env *e, int s);
-int get_status(struct Env *e);
-int my_env_create();
 
 // for the grading script
 #define ENV_CREATE2(x, y) \
