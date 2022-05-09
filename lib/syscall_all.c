@@ -15,7 +15,7 @@ extern struct Env *curenv;
  * 	`c` is the character you want to print.
  */
 void sys_putchar(int sysno, int c, int a2, int a3, int a4, int a5)
-{
+{// printf("sys_putchar\n");
 	printcharc((char) c);
 	return ;
 }
@@ -51,7 +51,7 @@ void *memcpy(void *destaddr, void const *srcaddr, u_int len)
  * 	return the current environment id
  */
 u_int sys_getenvid(void)
-{
+{// printf("sys_getenvid\n");
 	return curenv->env_id;
 }
 
@@ -66,7 +66,10 @@ u_int sys_getenvid(void)
  */
 /*** exercise 4.6 ***/
 void sys_yield(void)
-{
+{// printf("sys_yield\n");
+	size_t s = sizeof(struct Trapframe);
+	bcopy((void *) KERNEL_SP - s, (void *) TIMESTACK - s, s);
+	sched_yield();
 }
 
 /* Overview:
@@ -81,7 +84,7 @@ void sys_yield(void)
  * 	Return 0 on success, < 0 when error occurs.
  */
 int sys_env_destroy(int sysno, u_int envid)
-{
+{// printf("sys_env_destroy\n");
 	/*
 		printf("[%08x] exiting gracefully\n", curenv->env_id);
 		env_destroy(curenv);
@@ -89,9 +92,7 @@ int sys_env_destroy(int sysno, u_int envid)
 	int r;
 	struct Env *e;
 
-	if ((r = envid2env(envid, &e, 1)) < 0) {
-		return r;
-	}
+	if ((r = envid2env(envid, &e, 1)) < 0) return r;
 
 	printf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
 	env_destroy(e);
@@ -111,12 +112,13 @@ int sys_env_destroy(int sysno, u_int envid)
  */
 /*** exercise 4.12 ***/
 int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
-{
+{// printf("sys_set_pgfault_handler\n");
 	// Your code here.
 	struct Env *env;
 	int ret;
-
-
+	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	env -> env_pgfault_handler = func;
+	env -> env_xstacktop = xstacktop;
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
 }
@@ -140,13 +142,17 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
  */
 /*** exercise 4.3 ***/
 int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
-{
+{// printf("sys_mem_alloc\n");
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-
+	if ( (va >= UTOP) || ((perm & PTE_V) == 0) || ((perm & PTE_COW) != 0) ) return -E_INVAL;
+	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	if ((ret = page_alloc(&ppage)) < 0) return ret;
+	if ((ret = page_insert(env -> env_pgdir, ppage, va, perm) < 0)) return ret;
+	return 0;
 }
 
 /* Overview:
@@ -165,7 +171,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 /*** exercise 4.4 ***/
 int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 				u_int perm)
-{
+{// printf("sys_mem_map\n");
 	int ret;
 	u_int round_srcva, round_dstva;
 	struct Env *srcenv;
@@ -179,7 +185,14 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	round_dstva = ROUNDDOWN(dstva, BY2PG);
 
     //your code here
-
+	if ((perm & PTE_V) == 0) return -E_INVAL;
+	if (round_srcva >= UTOP || round_dstva >= UTOP) return -E_INVAL;
+	if ((ret = envid2env(srcid, &srcenv, 1)) < 0) return ret;
+	if ((ret = envid2env(dstid, &dstenv, 1)) < 0) return ret;
+	ppage = page_lookup(srcenv -> env_pgdir, round_srcva, &ppte);
+	if (ppage == NULL) return -E_INVAL;
+	if (((*ppte & PTE_R) == 0) && ((perm & PTE_R) != 0)) return -E_INVAL;
+	ret = page_insert(dstenv -> env_pgdir, ppage, round_dstva, perm);
 	return ret;
 }
 
@@ -194,10 +207,14 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
  */
 /*** exercise 4.5 ***/
 int sys_mem_unmap(int sysno, u_int envid, u_int va)
-{
+{// printf("sys_mem_unmap\n");
 	// Your code here.
 	int ret;
 	struct Env *env;
+	
+	if (va >= UTOP) return -E_INVAL;
+	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	page_remove(env -> env_pgdir, va);
 
 	return ret;
 	//	panic("sys_mem_unmap not implemented");
@@ -217,12 +234,17 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
  */
 /*** exercise 4.8 ***/
 int sys_env_alloc(void)
-{
+{// printf("sys_env_alloc\n");
 	// Your code here.
 	int r;
 	struct Env *e;
-
-
+	if ((r = env_alloc(&e, curenv -> env_id)) < 0) return r;
+	size_t s = sizeof(struct Trapframe);
+	bcopy((void *) KERNEL_SP - s, &e -> env_tf, s);
+	e -> env_status = ENV_NOT_RUNNABLE;
+	e -> env_pri = curenv -> env_pri;
+	e -> env_tf.pc = e -> env_tf.cp0_epc;
+	e -> env_tf.regs[2] = 0;
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }
@@ -241,11 +263,17 @@ int sys_env_alloc(void)
  */
 /*** exercise 4.14 ***/
 int sys_set_env_status(int sysno, u_int envid, u_int status)
-{
+{// printf("sys_set_env_status\n");
 	// Your code here.
 	struct Env *env;
 	int ret;
-
+	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE && status != ENV_FREE) return -E_INVAL;
+	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	if (status == ENV_FREE) {
+		env_destroy(env);
+	} else {
+		env -> env_status = status;
+	}
 	return 0;
 	//	panic("sys_env_set_status not implemented");
 }
@@ -263,7 +291,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  * Note: This hasn't be used now?
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
-{
+{// printf("sys_set_trapframe\n");
 
 	return 0;
 }
@@ -278,7 +306,7 @@ int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
  * 	This function will make the whole system stop.
  */
 void sys_panic(int sysno, char *msg)
-{
+{// printf("sys_panic\n");
 	// no page_fault_mode -- we are trying to panic!
 	panic("%s", TRUP(msg));
 }
@@ -298,7 +326,12 @@ void sys_panic(int sysno, char *msg)
  */
 /*** exercise 4.7 ***/
 void sys_ipc_recv(int sysno, u_int dstva)
-{
+{// printf("sys_ipc_recv\n");
+	if (dstva >= UTOP) return;
+	curenv -> env_ipc_recving = 1;
+	curenv -> env_ipc_dstva = dstva;
+	curenv -> env_status = ENV_NOT_RUNNABLE;
+	sys_yield();
 }
 
 /* Overview:
@@ -321,11 +354,25 @@ void sys_ipc_recv(int sysno, u_int dstva)
 /*** exercise 4.7 ***/
 int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 					 u_int perm)
-{
+{// printf("sys_ipc_can_send\n");
 
 	int r;
 	struct Env *e;
 	struct Page *p;
+	Pte *pte;
+	if (srcva >= UTOP) return -E_INVAL;
+	if ((r = envid2env(envid, &e, 0)) < 0) return r;
+	if (e -> env_ipc_recving == 0) return -E_IPC_NOT_RECV;
+	e -> env_ipc_value = value;
+	e -> env_ipc_from = curenv -> env_id;
+	e -> env_ipc_perm = perm;
+	e -> env_ipc_recving = 0;
+	e -> env_status = ENV_RUNNABLE;
+	if (srcva != 0) {
+		p = page_lookup(curenv -> env_pgdir, srcva, &pte);
+		if (p == NULL || e -> env_ipc_dstva >= UTOP) return -E_INVAL;
+		page_insert(e -> env_pgdir, p, e -> env_ipc_dstva, perm);
+	}
 
 	return 0;
 }

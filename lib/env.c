@@ -156,8 +156,7 @@ env_init(void)
  *  DO NOT map anything into the user portion of the env's virtual address space.
  */
 /*** exercise 3.4 ***/
-static int
-env_setup_vm(struct Env *e)
+static int env_setup_vm(struct Env *e)
 {
 
 	int i, r;
@@ -219,8 +218,7 @@ env_setup_vm(struct Env *e)
  *      (the value of PC should NOT be set in env_alloc)
  */
 /*** exercise 3.5 ***/
-int
-env_alloc(struct Env **new, u_int parent_id)
+int env_alloc(struct Env **new, u_int parent_id)
 {
 	int r;
 	struct Env *e;
@@ -245,7 +243,7 @@ env_alloc(struct Env **new, u_int parent_id)
 	e -> env_runs = 0;
 
     /* Step 4: Focus on initializing the sp register and cp0_status of env_tf field, located at this new Env. */
-	e -> env_tf.cp0_status = 0x10001004;
+	e -> env_tf.cp0_status = 0x1000100c;
 	e -> env_tf.regs[29] = USTACKTOP;
 
 
@@ -406,8 +404,7 @@ env_create(u_char *binary, int size)
 /* Overview:
  *  Free env e and all memory it uses.
  */
-void
-env_free(struct Env *e)
+void env_free(struct Env *e)
 {
     Pte *pt;
     u_int pdeno, pteno, pa;
@@ -449,8 +446,7 @@ env_free(struct Env *e)
 /* Overview:
  *  Free env e, and schedule to run a new env if e is the current env.
  */
-void
-env_destroy(struct Env *e)
+void env_destroy(struct Env *e)
 {
     /* Hint: free e. */
     env_free(e);

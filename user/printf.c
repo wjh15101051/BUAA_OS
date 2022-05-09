@@ -33,8 +33,7 @@ void writef(char *fmt, ...)
 	va_end(ap);
 }
 
-void
-_user_panic(const char *file, int line, const char *fmt, ...)
+void _user_panic(const char *file, int line, const char *fmt, ...)
 {
 	va_list ap;
 
