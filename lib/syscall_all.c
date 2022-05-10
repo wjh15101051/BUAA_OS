@@ -92,7 +92,7 @@ int sys_env_destroy(int sysno, u_int envid)
 	int r;
 	struct Env *e;
 
-	if ((r = envid2env(envid, &e, 1)) < 0) return r;
+	if ((r = envid2env(envid, &e, 0)) < 0) return r;
 
 	printf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
 	env_destroy(e);
@@ -116,7 +116,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 	// Your code here.
 	struct Env *env;
 	int ret;
-	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	if ((ret = envid2env(envid, &env, 0)) < 0) return ret;
 	env -> env_pgfault_handler = func;
 	env -> env_xstacktop = xstacktop;
 	return 0;
@@ -187,8 +187,8 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
     //your code here
 	if ((perm & PTE_V) == 0) return -E_INVAL;
 	if (round_srcva >= UTOP || round_dstva >= UTOP) return -E_INVAL;
-	if ((ret = envid2env(srcid, &srcenv, 1)) < 0) return ret;
-	if ((ret = envid2env(dstid, &dstenv, 1)) < 0) return ret;
+	if ((ret = envid2env(srcid, &srcenv, 0)) < 0) return ret;
+	if ((ret = envid2env(dstid, &dstenv, 0)) < 0) return ret;
 	ppage = page_lookup(srcenv -> env_pgdir, round_srcva, &ppte);
 	if (ppage == NULL) return -E_INVAL;
 	if (((*ppte & PTE_R) == 0) && ((perm & PTE_R) != 0)) return -E_INVAL;
@@ -213,7 +213,7 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 	struct Env *env;
 	
 	if (va >= UTOP) return -E_INVAL;
-	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	if ((ret = envid2env(envid, &env, 0)) < 0) return ret;
 	page_remove(env -> env_pgdir, va);
 
 	return ret;
@@ -280,7 +280,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	struct Env *env;
 	int ret;
 	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE && status != ENV_FREE) return -E_INVAL;
-	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
+	if ((ret = envid2env(envid, &env, 0)) < 0) return ret;
 	if (status == ENV_FREE) {
 		// printf("!!!!!!!!!!!!!!! env_destroy %d\n", env -> env_id);
 		env_destroy(env);
