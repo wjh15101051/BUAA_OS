@@ -478,9 +478,8 @@ extern void lcontext(u_int contxt);
  *      env_pop_tf , lcontext.
  */
 /*** exercise 3.10 ***/
-void
-env_run(struct Env *e)
-{
+void env_run(struct Env *e)
+{printf("env_run\n");
     /* Step 1: save register state of curenv. */
     /* Hint: if there is an environment running, 
      *   you should switch the context and save the registers. 
@@ -491,20 +490,21 @@ env_run(struct Env *e)
 		bcopy((void *) old, &(curenv -> env_tf), sizeof(struct Trapframe));
 		curenv -> env_tf.pc = curenv -> env_tf.cp0_epc;
 	}
-
+	printf("copy_trapframe\n");
     /* Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
 	curenv -> env_runs++;
-
+	printf("set curenv\n");
     /* Step 3: Use lcontext() to switch to its address space. */
 	lcontext((u_int) curenv -> env_pgdir);
-
+	printf("lcontext\n");
     /* Step 4: Use env_pop_tf() to restore the environment's
      *   environment   registers and return to user mode.
      *
      * Hint: You should use GET_ENV_ASID there. Think why?
      *   (read <see mips run linux>, page 135-144)
      */
+	printf("%d %d\n", curenv -> env_id, curenv -> env_tf.pc);
 	env_pop_tf(&(curenv -> env_tf), GET_ENV_ASID(curenv -> env_id));
 }
 

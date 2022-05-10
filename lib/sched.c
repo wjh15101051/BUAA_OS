@@ -13,7 +13,7 @@
  */
 /*** exercise 3.15 ***/
 void sched_yield(void)
-{
+{// printf("sched_yield\n");
 	static int count = 0; // remaining time slices of current env
 	static int point = 0; // current env_sched_list index
 	static struct Env *e = NULL;    
@@ -40,6 +40,7 @@ void sched_yield(void)
 			if (e -> env_status == ENV_FREE) {
 				LIST_REMOVE(e, env_sched_link);
 			} else if (e -> env_status == ENV_NOT_RUNNABLE) {
+				// printf("envid %d is ENV_NOT_RUNNABLE\n", e -> env_id);
 				LIST_REMOVE(e, env_sched_link);
 				LIST_INSERT_TAIL(&env_sched_list[1 - point], e, env_sched_link);
 			} else {
@@ -48,6 +49,7 @@ void sched_yield(void)
 			}
 		}
 	}
+	printf("run %d\n", e -> env_id);
 	count--;
 	env_run(e);
 }

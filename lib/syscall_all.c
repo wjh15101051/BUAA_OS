@@ -245,6 +245,7 @@ int sys_env_alloc(void)
 	e -> env_pri = curenv -> env_pri;
 	e -> env_tf.pc = e -> env_tf.cp0_epc;
 	e -> env_tf.regs[2] = 0;
+	LIST_INSERT_HEAD(&env_sched_list[0], e, env_sched_link);
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }

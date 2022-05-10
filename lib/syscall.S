@@ -46,7 +46,7 @@ NESTED(handle_sys,TF_SIZE, sp)
     nop
 
     // TODO: Resume current kernel stack
-
+	addiu sp, sp, 24
     sw      v0, TF_REG2(sp)             // Store return value of function sys_* (in $v0) into trapframe
 
     j       ret_from_exception          // Return from exeception

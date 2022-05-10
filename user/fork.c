@@ -125,7 +125,7 @@ static void pgfault(u_int va)
  */
 /*** exercise 4.10 ***/
 static void duppage(u_int envid, u_int pn)
-{
+{ writef("start duppage\n");
 	u_int addr;
 	u_int perm;
 	addr = pn << PGSHIFT;
@@ -149,7 +149,7 @@ static void duppage(u_int envid, u_int pn)
 		if (syscall_mem_map(0, addr, 0, addr, perm | PTE_COW) < 0) {
 			user_panic("duppage : syscall_mem_map 1 error");
 		}	
-	}
+	} writef("finish duppage\n");
 
 	//	user_panic("duppage not implemented");
 }
@@ -177,26 +177,32 @@ int fork(void)
 	set_pgfault_handler(pgfault);
 	//alloc a new alloc
 	newenvid = syscall_env_alloc();
-	if (newenvid == 0) {
+	if (newenvid == 0) { writef("start child thread in user/fork.c/fork\n");
 		env = envs + ENVX(syscall_getenvid());
-	} else {
-		Pde* vpde = (Pde *) (*vpd);
+	} else { writef("start father thread in user/fork.c/fork\n");
+		writef("###\n");
+		writef("%x\n", (int) (*vpd));
+		Pde* vpde = (Pde *) (*vpd);writef("!!!\n");
 		Pte* vpte = (Pte *) (*vpt);
+		writef("start for\n");
 		for (i = 0; i < UTOP - 2 * BY2PG; i += BY2PG) {
+			// writef("for %d\n", i);
 			if ((vpde[i >> PDSHIFT] & PTE_V) && (vpte[i >> PGSHIFT] & PTE_V)) {
+				writef("for dup %d\n", i);
 				duppage(newenvid, VPN(i));
 			}
-		}
+		} writef("father finish duppage\n");
 		if (syscall_mem_alloc(newenvid, UXSTACKTOP - BY2PG, PTE_V | PTE_R) < 0) {
 			user_panic("syscall_mem_alloc UXSTACKTOP in user/fork.c/fork error!");
-		}
+		} writef("father finish memalloc\n");
 		if (syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP) < 0) {
 			user_panic("syscall_Set_pgfault_handler in user/fork.c/fork error!");
-		}
+		} writef("father finish set_pgfault_handler\n");
 		if (syscall_set_env_status(newenvid, ENV_RUNNABLE) < 0) {
 			user_panic("syscall_set_env_status in user/fork.c/fork error!");
-		}
+		} writef("father finish set_env_status\n");
 	}
+	writef("fork succeed returned with newenvid : %d\n", newenvid);
 	return newenvid;
 }
 
