@@ -433,7 +433,7 @@ void page_remove(Pde *pgdir, u_long va)
 // Overview:
 // 	Update TLB.
 void tlb_invalidate(Pde *pgdir, u_long va)
-{ printf("tlb_invalidate\n");
+{// printf("tlb_invalidate\n");
 	if (curenv) {
 		tlb_out(PTE_ADDR(va) | GET_ENV_ASID(curenv->env_id));
 	} else {
@@ -647,7 +647,7 @@ void page_check(void)
 }
 
 void pageout(int va, int context)
-{ printf("pageout\n");
+{// printf("pageout\n");
 	u_long r;
 	struct Page *p = NULL;
 

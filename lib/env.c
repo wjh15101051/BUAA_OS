@@ -229,7 +229,6 @@ int env_alloc(struct Env **new, u_int parent_id)
 		return -E_NO_FREE_ENV;
 	}
 	e = LIST_FIRST(&env_free_list);
-
     /* Step 2: Call a certain function (has been completed just now) to init kernel memory layout for this new Env.
      *The function mainly maps the kernel address to this new Env address. */
 	if ((r = env_setup_vm(e)) != 0) {
@@ -241,6 +240,7 @@ int env_alloc(struct Env **new, u_int parent_id)
 	e -> env_status = ENV_RUNNABLE;
 	e -> env_parent_id = parent_id;
 	e -> env_runs = 0;
+//printf("alloc new env %d\n", e -> env_id);
 
     /* Step 4: Focus on initializing the sp register and cp0_status of env_tf field, located at this new Env. */
 	e -> env_tf.cp0_status = 0x1000100c;
@@ -479,7 +479,7 @@ extern void lcontext(u_int contxt);
  */
 /*** exercise 3.10 ***/
 void env_run(struct Env *e)
-{printf("env_run\n");
+{// printf("env_run\n");
     /* Step 1: save register state of curenv. */
     /* Hint: if there is an environment running, 
      *   you should switch the context and save the registers. 
@@ -490,21 +490,21 @@ void env_run(struct Env *e)
 		bcopy((void *) old, &(curenv -> env_tf), sizeof(struct Trapframe));
 		curenv -> env_tf.pc = curenv -> env_tf.cp0_epc;
 	}
-	printf("copy_trapframe\n");
+	// printf("copy_trapframe\n");
     /* Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
 	curenv -> env_runs++;
-	printf("set curenv\n");
+	// printf("set curenv\n");
     /* Step 3: Use lcontext() to switch to its address space. */
 	lcontext((u_int) curenv -> env_pgdir);
-	printf("lcontext\n");
+	// printf("lcontext\n");
     /* Step 4: Use env_pop_tf() to restore the environment's
      *   environment   registers and return to user mode.
      *
      * Hint: You should use GET_ENV_ASID there. Think why?
      *   (read <see mips run linux>, page 135-144)
      */
-	printf("%d %d\n", curenv -> env_id, curenv -> env_tf.pc);
+	// printf("%d %d\n", curenv -> env_id, curenv -> env_tf.pc);
 	env_pop_tf(&(curenv -> env_tf), GET_ENV_ASID(curenv -> env_id));
 }
 

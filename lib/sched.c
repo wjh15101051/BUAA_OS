@@ -36,20 +36,31 @@ void sched_yield(void)
 		}
 		while (1) {
 			if (LIST_EMPTY(&env_sched_list[point])) point = 1 - point;
+			if (LIST_EMPTY(&env_sched_list[point])) {
+				panic("No Env Runnable!\n");
+			}
 			e = LIST_FIRST(&env_sched_list[point]);
 			if (e -> env_status == ENV_FREE) {
+				// printf("envid %d id ENV_FREE\n", e -> env_id);
 				LIST_REMOVE(e, env_sched_link);
 			} else if (e -> env_status == ENV_NOT_RUNNABLE) {
 				// printf("envid %d is ENV_NOT_RUNNABLE\n", e -> env_id);
 				LIST_REMOVE(e, env_sched_link);
+				// printf("not runnable env finish LIST_REMOVE\n");
+//				struct Env *ee;
+//				LIST_FOREACH(ee, &env_sched_list[1 - point], env_sched_link) {
+//					printf("env %d\n", ee -> env_id);
+//				}
 				LIST_INSERT_TAIL(&env_sched_list[1 - point], e, env_sched_link);
+				// printf("not runnable env finish LIST_INSERT_TAIL\n");
 			} else {
 				count = e -> env_pri;
 				break;
 			}
+			// printf("findint runnable environment\n");
 		}
 	}
-	printf("run %d\n", e -> env_id);
+	// printf("run %d\n", e -> env_id);
 	count--;
 	env_run(e);
 }

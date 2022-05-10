@@ -14,7 +14,7 @@ void umain()
 				writef("\t\tthis is child2 :a:%d\n", a);
 			}
 		}
-		writef("child2 : %d\n", id);
+//		writef("child2 : %d\n", id);
 
 		a += 2;
 
@@ -22,7 +22,7 @@ void umain()
 			writef("\tthis is child :a:%d\n", a);
 		}
 	}
-	writef("child1 : %d\n", id);
+//	writef("child1 : %d\n", id);
 
 	a++;
 

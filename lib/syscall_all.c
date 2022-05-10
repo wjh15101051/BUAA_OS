@@ -245,7 +245,18 @@ int sys_env_alloc(void)
 	e -> env_pri = curenv -> env_pri;
 	e -> env_tf.pc = e -> env_tf.cp0_epc;
 	e -> env_tf.regs[2] = 0;
+//	printf("insert list %d\n", e -> env_id);
+	struct Env *ee;
+//	LIST_FOREACH(ee, &env_sched_list[0], env_sched_link) {
+//		printf("!!! %d\n", ee -> env_id);
+//	}
 	LIST_INSERT_HEAD(&env_sched_list[0], e, env_sched_link);
+//	printf("after insert\n");
+//	LIST_FOREACH(ee, &env_sched_list[0], env_sched_link) {
+//		int iter;
+//		for (iter = 0; iter < 1000000; ++iter);
+//		printf("### %d\n", ee -> env_id);
+//	}
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }
@@ -271,6 +282,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE && status != ENV_FREE) return -E_INVAL;
 	if ((ret = envid2env(envid, &env, 1)) < 0) return ret;
 	if (status == ENV_FREE) {
+		// printf("!!!!!!!!!!!!!!! env_destroy %d\n", env -> env_id);
 		env_destroy(env);
 	} else {
 		env -> env_status = status;

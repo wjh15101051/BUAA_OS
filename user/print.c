@@ -26,8 +26,7 @@ static const char user_theFatalMsg[] = "fatal error in user_lp_Print!";
 /* -*-
  * A low level printf() function.
  */
-void
-user_lp_Print(void (*output)(void *, const char *, int),
+void user_lp_Print(void (*output)(void *, const char *, int),
 			  void *arg,
 			  const char *fmt,
 			  va_list ap)

@@ -162,6 +162,7 @@
 				(elm) -> field.le_prev = &LIST_NEXT(*((elm) -> field.le_prev), field);			\
 			}						\
 			*((elm) -> field.le_prev) = (elm);			\
+			LIST_NEXT((elm), field) = NULL;					\
 		}								\
 	} while (0)								\
 /* finish your code here. */
