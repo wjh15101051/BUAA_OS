@@ -13,15 +13,13 @@ void mips_init() {
 	page_init();
 
 	env_init();
-	printf("finish env_init");
-	//ENV_CREATE(user_tltest);
-	//ENV_CREATE(user_fktest);
-	ENV_CREATE(user_pingpong);
-	printf("finish env_create\n");
+
+	// ENV_CREATE(user_devtst);
+	// ENV_CREATE(user_fstest);
+	// ENV_CREATE(fs_serv);
+ 
 	trap_init();
-	printf("finish trap_init\n");
 	kclock_init();
-	printf("finish kclock_init\n");
 
 
 	while(1);
@@ -48,9 +46,7 @@ void bcopy(const void *src, void *dst, size_t len) {
 
 void bzero(void *b, size_t len) {
 	void *max = b + len;
-	while (b < max && ((int) b & 0x3) != 0) {
-		*(char *)b++ = 0;
-	}
+
 	// fill machine words while possible
 	while (b + 3 < max) {
 		*(int *)b = 0;
