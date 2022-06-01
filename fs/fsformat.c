@@ -208,7 +208,7 @@ int make_link_block(struct File *dirf, int nblk) {
 /*** exercise 5.4 ***/
 struct File *create_file(struct File *dirf) {
     struct File *dirblk;
-    int i, bno, found;
+    int i, j, bno, found;
     int nblk = dirf -> f_size / BY2BLK;
 
     // Step1: According to different range of nblk, make classified discussion to
