@@ -128,7 +128,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
  * 'perm' in the address space of 'envid'.
  *
  * 	If a page is already mapped at 'va', that page is unmapped as a
- * side-effect.
+ * side effect.
  *
  * Pre-Condition:
  * perm -- PTE_V is required,
@@ -266,7 +266,7 @@ int sys_env_alloc(void)
  *
  * Pre-Condition:
  * 	status should be one of `ENV_RUNNABLE`, `ENV_NOT_RUNNABLE` and
- * `ENV_FREE`. Otherwise return -E_INVAL.
+ * `ENV_FREE`. Otherwise, return -E_INVAL.
  *
  * Post-Condition:
  * 	Returns 0 on success, < 0 on error.
@@ -301,7 +301,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  * 	Returns 0 on success, < 0 on error.
  * 	Return -E_INVAL if the environment cannot be manipulated.
  *
- * Note: This hasn't be used now?
+ * Note: This hasn't been used now?
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {// printf("sys_set_trapframe\n");
@@ -350,9 +350,9 @@ void sys_ipc_recv(int sysno, u_int dstva)
 /* Overview:
  * 	Try to send 'value' to the target env 'envid'.
  *
- * 	The send fails with a return value of -E_IPC_NOT_RECV if the
+ * 	The send function fails with a return value of -E_IPC_NOT_RECV if the
  * target has not requested IPC with sys_ipc_recv.
- * 	Otherwise, the send succeeds, and the target's ipc fields are
+ * 	Otherwise, the send function succeeds, and the target's ipc fields are
  * updated as follows:
  *    env_ipc_recving is set to 0 to block future sends
  *    env_ipc_from is set to the sending envid
@@ -417,7 +417,22 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
  /*** exercise 5.1 ***/
 int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 {
-        // Your code here
+    int cnt_dev = 3;
+    u_int dev_addr[] = {0x10000000, 0x13000000, 0x15000000};
+    u_int dev_len[] = {0x20, 0x4200, 0x200};
+    u_int target_addr = dev + 0xa0000000;
+    int i;
+    int checked = 0;
+    if (va >= ULIM) return -E_INVAL;
+    for (i = 0; i < cnt_dev; i++) {
+        if (dev_addr[i] <= dev && dev + len <= dev_addr[i] + dev_len[i]) {
+            checked = 1;
+            break;
+        }
+    }
+    if (checked == 0) return -E_INVAL;
+    bcopy((void *)va, (void *)target_addr, len);
+    return 0;
 }
 
 /* Overview:
@@ -439,5 +454,19 @@ int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
  /*** exercise 5.1 ***/
 int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 {
-        // Your code here
+    int cnt_dev = 3;
+    u_int dev_addr[] = {0x10000000, 0x13000000, 0x15000000};
+    u_int dev_len[] = {0x20, 0x4200, 0x200};
+    u_int target_addr = dev + 0xa0000000;
+    int i;
+    int checked = 0;
+    if (va >= ULIM) return -E_INVAL;
+    for (i = 0; i < cnt_dev; i++) {
+        if (dev_addr[i] <= dev && dev + len <= dev_addr[i] + dev_len[i]) {
+            checked = 1;
+            break;
+        }
+    }
+    if (checked == 0) return -E_INVAL;
+    bcopy((void *)va, (void *)target_addr, len);
 }

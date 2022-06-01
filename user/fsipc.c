@@ -19,8 +19,7 @@ extern u_char fsipcbuf[BY2PG];		// page-aligned, declared in entry.S
 // Returns:
 //	0 if successful,
 //	< 0 on failure.
-static int
-fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
+static int fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
 {
 	u_int whom;
 	// NOTEICE: Our file system no.1 process!
@@ -35,8 +34,7 @@ fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
 // Returns:
 //	0 on success,
 //	< 0 on failure.
-int
-fsipc_open(const char *path, u_int omode, struct Fd *fd)
+int fsipc_open(const char *path, u_int omode, struct Fd *fd)
 {
 	u_int perm;
 	struct Fsreq_open *req;
@@ -129,12 +127,14 @@ int
 fsipc_remove(const char *path)
 {
 	// Step 1: Check the length of path, decide if the path is valid.
-
+    if (strlen(path) >= MAXPATHLEN) return -E_BAD_PATH;
 	// Step 2: Transform fsipcbuf to struct Fsreq_remove*
-
+    struct Fsreq_remove *req;
+    req = (struct Fsreq_remove *) fsipcbuf;
 	// Step 3: Copy path to path in req.
-
+    strcpy((char *)req -> req_path, path);
 	// Step 4: Send request to fs server with IPC.
+    return fsipc(FSREQ_REMOVE, req, 0, 0);
 }
 
 // Overview:

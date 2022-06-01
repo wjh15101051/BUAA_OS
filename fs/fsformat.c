@@ -22,7 +22,7 @@ typedef struct File File;
 
 #define NBLOCK 1024 // The number of blocks in the disk.
 uint32_t nbitblock; // the number of bitmap blocks.
-uint32_t nextbno;   // next availiable block.
+uint32_t nextbno;   // next available block.
 
 struct Super super; // super block.
 
@@ -184,7 +184,7 @@ void save_block_link(struct File *f, int nblk, int bno)
     }
 }
 
-// Make new block contians link to files in a directory.
+// Make new block contains links towards files in a directory.
 int make_link_block(struct File *dirf, int nblk) {
     int bno = next_block(BLOCK_FILE);
     save_block_link(dirf, nblk, bno);
@@ -193,8 +193,8 @@ int make_link_block(struct File *dirf, int nblk) {
 }
 
 // Overview:
-//      Create new block pointer for a file under sepcified directory.
-//      Notice that when we delete a file, we do not re-arrenge all
+//      Create new block pointer for a file under specified directory.
+//      Notice that when we delete a file, we do not re-arrange all
 //      other file pointers, so we should be careful of existing empty
 //      file pointers
 //
@@ -202,23 +202,30 @@ int make_link_block(struct File *dirf, int nblk) {
 //      We ASSUME that this function will never fail
 //
 // Return:
-//      Return a unused struct File pointer
+//      Return an unused struct File pointer
 // Hint:
 //      use make_link_block function
 /*** exercise 5.4 ***/
 struct File *create_file(struct File *dirf) {
     struct File *dirblk;
     int i, bno, found;
-    int nblk = dirf->f_size / BY2BLK;
+    int nblk = dirf -> f_size / BY2BLK;
 
-    // Your code here
     // Step1: According to different range of nblk, make classified discussion to
     //        calculate the correct block number.
-
-
+    for (i = 0; i < nblk; ++i) {
+        if (i < NDIRECT) bno = dirf -> f_direct[i];
+        else bno = ((int *) (disk[dirf -> f_indirect].data))[i];
+        dirblk = (struct File *) (disk[bno].data);
+        for (j = 0; j < FILE2BLK; ++j) {
+            if (dirblk[j].f_name[0] == '\0') {
+                return &dirblk[j];
+            }
+        }
+    }
     // Step2: Find an unused pointer
-
-
+    bno = make_link_block(dirf, nblk);
+    return (struct File *) disk[bno].data;
 }
 
 // Write file to disk under specified dir.
@@ -227,7 +234,7 @@ void write_file(struct File *dirf, const char *path) {
     uint8_t buffer[n+1], *dist;
     struct File *target = create_file(dirf);
 
-    /* in case `create_file` is't filled */
+    /* in case `create_file` isn't filled */
     if (target == NULL) return;
 
     int fd = open(path, O_RDONLY);
@@ -254,10 +261,10 @@ void write_file(struct File *dirf, const char *path) {
 // Overview:
 //      Write directory to disk under specified dir.
 //      Notice that we may use standard library functions to operate on
-//      directory to get file infomation.
+//      directory to get file information.
 //
 // Post-Condition:
-//      We ASSUME that this funcion will never fail
+//      We ASSUME that this function will never fail
 void write_directory(struct File *dirf, char *name) {
     // Your code here
 }
