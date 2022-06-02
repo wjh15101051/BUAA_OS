@@ -246,8 +246,7 @@ serve_sync(u_int envid)
 	ipc_send(envid, 0, 0, 0);
 }
 
-void
-serve(void)
+void serve(void)
 {
 	u_int req, whom, perm;
 
