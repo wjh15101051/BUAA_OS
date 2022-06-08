@@ -469,4 +469,5 @@ int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
     }
     if (checked == 0) return -E_INVAL;
     bcopy((void *) target_addr, (void *) va, len);
+	return 0;
 }
