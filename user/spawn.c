@@ -123,10 +123,20 @@ int spawn(char *prog, char **argv)
 		return r;
 	}
 	// Your code begins here
+    fd = r;
+    r = readn(fd, elfbuf, sizeof(Elf32_Ehdr));
+    if (r < 0) user_panic("read ehdr failed");
+    ehdr = (Elf32_Ehdr *) elfbuf;
+    if (!usr_is_elf_format((u_char *) ehdr) || ehdr->e_type != ET_EXEC) user_panic("not an elf or executable file");
+    entry_size = ehdr->e_phentsize;
+    text_start = ehdr->e_phoff;
+    count = ehdr->e_phnum;
 	// Before Step 2 , You had better check the "target" spawned is a execute bin 
 	// Step 2: Allocate an env (Hint: using syscall_env_alloc())
-	// Step 3: Using init_stack(...) to initialize the stack of the allocated env
-	// Step 3: Map file's content to new env's text segment
+    if ((child_envid = syscall_env_alloc()) < 0) user_panic("syscall_env_alloc failed in spawn");
+    // Step 3: Using init_stack(...) to initialize the stack of the allocated env
+    init_stack(child_envid, argv, &esp);
+    // Step 3: Map file's content to new env's text segment
 	//        Hint 1: what is the offset of the text segment in file? try to use objdump to find out.
 	//        Hint 2: using read_map(...)
 	//		  Hint 3: Important!!! sometimes ,its not safe to use read_map ,guess why 
@@ -134,11 +144,21 @@ int spawn(char *prog, char **argv)
 	// Note1: Step 1 and 2 need sanity check. In other words, you should check whether
 	//       the file is opened successfully, and env is allocated successfully.
 	// Note2: You can achieve this func in any way ，remember to ensure the correctness
-	//        Maybe you can review lab3 
+	//        Maybe you can review lab3
+    for (i = 0; i < count; ++i) {
+        if ((r = seek(fd, text_start)) < 0) user_panic("seek failed in spawn");
+        if ((r = readn(fd, elfbuf, entry_size)) < 0) user_panic("readn failed in spawn");
+        phdr = (Elf32_Phdr *) elfbuf;
+        if (phdr->p_type == PT_LOAD) {
+            if ((r = usr_load_elf(fd, phdr, child_envid)) < 0) user_panic("load failed in spawn");
+        }
+        text_start += entry_size;
+    }
 	// Your code ends here
 
+    size = count * entry_size;
 	struct Trapframe *tf;
-	writef("\n::::::::::spawn size : %x  sp : %x::::::::\n",size,esp);
+	writef("\n::::::::::spawn size :: %x  sp : %x::::::::\n",size,esp);
 	tf = &(envs[ENVX(child_envid)].env_tf);
 	tf->pc = UTEXT;
 	tf->regs[29]=esp;
