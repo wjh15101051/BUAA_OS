@@ -116,6 +116,9 @@ int spawn(char *prog, char **argv)
 	u_int esp;
 	Elf32_Ehdr* elf;
 	Elf32_Phdr* ph;
+	int count, entry_size;
+	Elf32_Ehdr *ehdr;
+	Elf32_Phdr *phdr;
 	// Note 0: some variable may be not used,you can cancel them as you like
 	// Step 1: Open the file specified by `prog` (prog is the path of the program)
 	if((r=open(prog, O_RDONLY))<0){
@@ -127,10 +130,10 @@ int spawn(char *prog, char **argv)
     r = readn(fd, elfbuf, sizeof(Elf32_Ehdr));
     if (r < 0) user_panic("read ehdr failed");
     ehdr = (Elf32_Ehdr *) elfbuf;
-    if (!usr_is_elf_format((u_char *) ehdr) || ehdr->e_type != ET_EXEC) user_panic("not an elf or executable file");
+    if (!usr_is_elf_format((u_char *) ehdr) || ehdr->e_type != 2) user_panic("not an elf or executable file");
     entry_size = ehdr->e_phentsize;
     text_start = ehdr->e_phoff;
-    count = ehdr->e_phnum;
+		count = ehdr->e_phnum;
 	// Before Step 2 , You had better check the "target" spawned is a execute bin 
 	// Step 2: Allocate an env (Hint: using syscall_env_alloc())
     if ((child_envid = syscall_env_alloc()) < 0) user_panic("syscall_env_alloc failed in spawn");
@@ -174,10 +177,11 @@ int spawn(char *prog, char **argv)
 		if(!((* vpd)[pdeno]&PTE_V))
 			continue;
 		for(pteno = 0;pteno<=PTX(~0);pteno++)
-		{
+		{// writef("@@@@");
 			pn = (pdeno<<10)+pteno;
 			if(((* vpt)[pn]&PTE_V)&&((* vpt)[pn]&PTE_LIBRARY))
 			{
+				// writef("#########");
 				va = pn*BY2PG;
 
 				if((r = syscall_mem_map(0,va,child_envid,va,(PTE_V|PTE_R|PTE_LIBRARY)))<0)
@@ -191,12 +195,13 @@ int spawn(char *prog, char **argv)
 		}
 	}
 
-
+	// writef("www!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	if((r = syscall_set_env_status(child_envid, ENV_RUNNABLE)) < 0)
 	{
 		writef("set child runnable is wrong\n");
 		return r;
 	}
+	// writef("%%%%%%%%%%%%%\n");
 	return child_envid;		
 
 }
