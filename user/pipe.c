@@ -181,7 +181,9 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
-	syscall_mem_unmap(0, fd2data(fd));
+    struct Fd *fd_tmp = fd;
+	syscall_mem_unmap(0, fd);
+    syscall_mem_unmap(0, fd2data(fd_tmp));
 	return 0;
 }
 
