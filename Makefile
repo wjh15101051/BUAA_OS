@@ -44,3 +44,9 @@ clean:
 	rm -rf *.o *~ $(vmlinux_elf)  $(user_disk)
 
 include include.mk
+
+run:
+	gxemul -E testmips -C R3000 -M 64 -d gxemul/fs.img gxemul/vmlinux 
+
+debug:
+	gxemul -E testmips -C R3000 -M 64 -d gxemul/fs.img gxemul/vmlinux -V
