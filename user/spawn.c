@@ -106,7 +106,6 @@ usr_load_elf(int fd , Elf32_Phdr *ph, int child_envid){
     u_int sgsize = ph->p_memsz;
     u_int bin_size = ph->p_filesz;
     u_int file_offset = ph->p_offset;
-    struct Env *env = (struct Env *)user_data;
     struct Page *p = NULL;
     u_char buf[BY2PG];
     u_long i;
