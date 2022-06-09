@@ -89,7 +89,7 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
         runs = env->env_runs;
         pfd = pageref(fd);
         pfp = pageref(p);
-    } while (runs != env->runs);
+    } while (runs != env->env_runs);
     if (pfd == pfp) {
         return 1;
     } else {
