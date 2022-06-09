@@ -98,10 +98,58 @@ int usr_is_elf_format(u_char *binary){
     return 0;
 }
 
+#define BUFPAGE 0x40000000
+
 int 
 usr_load_elf(int fd , Elf32_Phdr *ph, int child_envid){
-	//Hint: maybe this function is useful 
-	//      If you want to use this func, you should fill it ,it's not hard
+    u_int va = ph->p_vaddr;
+    u_int sgsize = ph->p_memsz;
+    u_int bin_size = ph->p_filesz;
+    u_int file_offset = ph->p_offset;
+    struct Env *env = (struct Env *)user_data;
+    struct Page *p = NULL;
+    u_char buf[BY2PG];
+    u_long i;
+    int r;
+    u_long offset = va - ROUNDDOWN(va, BY2PG);
+    int len;
+    i = 0;
+    /* Step 1: load all content of bin into memory. */
+    if (offset) {
+        if ((r = syscall_mem_alloc(child_envid, va, PTE_V | PTE_R))) return r;
+        len = MIN(bin_size, BY2PG - offset);
+        if ((r = seek(fd, file_offset)) < 0) return r;
+        if ((r = readn(fd, buf, len)) < 0) return r;
+        if ((r = syscall_mem_map(child_envid, va, 0, BUFPAGE, PTE_V | PTE_R)) < 0) return r;
+        user_bcopy((void *) buf, (void *) (BUFPAGE + offset), len);
+        if ((r = syscall_mem_unmap(0, BUFPAGE)) < 0) return r;
+        i += len;
+    }
+    for (; i < bin_size;) {
+        if ((r = syscall_mem_alloc(child_envid, va + i, PTE_V | PTE_R))) return r;
+        len = MIN(BY2PG, bin_size - i);
+        if ((r = seek(fd, file_offset + i)) < 0) return r;
+        if ((r = readn(fd, buf, len)) < 0) return r;
+        if ((r = syscall_mem_map(child_envid, va + i, 0, BUFPAGE, PTE_V | PTE_R)) < 0) return r;
+        user_bcopy((void *) buf, (void *) BUFPAGE, len);
+        if ((r = syscall_mem_unmap(0, BUFPAGE)) < 0) return r;
+        i += len;
+    }
+    /* Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
+     * hint: variable `i` has the value of `bin_size` now! */
+    offset = va + i - ROUNDDOWN(va + i, BY2PG);
+    if (offset) {
+        len = MIN(sgsize - i, BY2PG - offset);
+        if ((r = syscall_mem_map(child_envid, va + i, 0, BUFPAGE, PTE_V | PTE_R)) < 0) return r;
+        user_bzero((void *) (BUFPAGE + offset), len);
+        if ((r = syscall_mem_unmap(0, BUFPAGE)) < 0) return r;
+        i += len;
+    }
+    while (i < sgsize) {
+        len = MIN(sgsize - i, BY2PG);
+        if ((r = syscall_mem_alloc(child_envid, va + i, PTE_V | PTE_R)) < 0) return r;
+        i += len;
+    }
 	return 0;
 }
 
