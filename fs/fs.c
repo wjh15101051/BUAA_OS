@@ -72,7 +72,7 @@ int map_block(u_int blockno)
 	// Step 1: Decide whether this block has already mapped to a page of physical memory.
     if (addr != 0) return 0;
 	// Step 2: Alloc a page of memory for this block via syscall.
-    re = syscall_mem_alloc(0, diskaddr(blockno), PTE_V | PTE_R);
+    re = syscall_mem_alloc(0, addr, PTE_V | PTE_R);
     return re;
 }
 
