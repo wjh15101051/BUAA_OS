@@ -1,6 +1,5 @@
 #ifndef LIB_H
 #define LIB_H
-#include "fd.h"
 #include "pmap.h"
 #include <mmu.h>
 #include <trap.h>
@@ -8,6 +7,8 @@
 #include <args.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <semaphore.h>
+#include "fd.h"
 /////////////////////////////////////////////////////head
 extern void umain();
 extern void libmain();
@@ -38,6 +39,9 @@ int pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*sta
 void pthread_exit(void *ret_val);
 int pthread_cancel(pthread_t thread);
 int pthread_join(pthread_t thread, void **ret_val);
+int syscall_pthread_alloc(void);
+
+
 
 /////////////////////////////////////////////////////fork spawn
 int spawn(char *prog, char **argv);
@@ -59,11 +63,22 @@ int syscall_mem_alloc(u_int envid, u_int va, u_int perm);
 int syscall_mem_map(u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 					u_int perm);
 int syscall_mem_unmap(u_int envid, u_int va);
+int syscall_set_pth_status(pthread_t pthread, u_int status);
+u_int syscall_read_pth_status(pthread_t pthread);
+int syscall_set_pth_retval(pthread_t pthread, u_int retval);
+u_int syscall_read_pth_retval(pthread_t pthread);
 
 inline static int syscall_env_alloc(void)
 {
     return msyscall(SYS_env_alloc, 0, 0, 0, 0, 0);
 }
+
+sem_t syscall_sem_init(u_int pshared, u_int init_val);
+void syscall_sem_destroy(sem_t sem);
+int syscall_sem_trywait(sem_t sem);
+void syscall_sem_wait(sem_t sem);
+void syscall_sem_post(sem_t sem);
+int syscall_sem_getvalue(sem_t sem);
 
 int syscall_set_env_status(u_int envid, u_int status);
 int syscall_set_trapframe(u_int envid, struct Trapframe *tf);

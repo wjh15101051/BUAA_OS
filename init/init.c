@@ -22,8 +22,11 @@ void mips_init() {
 	//ENV_CREATE(user_icode);
 	//ENV_CREATE(fs_serv);
     //ENV_CREATE(user_pthtestcreateandjoin);
-    ENV_CREATE(user_pthtestexitandjoin);
- 
+    //ENV_CREATE(user_pthtestexitandjoin);
+    //ENV_CREATE(user_pthtestcancel);
+    //ENV_CREATE(user_semtest);
+    ENV_CREATE(user_semtestthread);
+
 	trap_init();
 	kclock_init();
 

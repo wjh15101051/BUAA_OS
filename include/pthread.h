@@ -9,19 +9,15 @@
 struct Pthread {
     u_int pth_status;
     void * pth_retval;
+    u_int env_id;
 };
 
-extern struct Pthread *pthread;
+extern struct Pthread *pthreads;
 
 #define NULL ((void *) 0)
 
 typedef u_int pthread_t;
 typedef int pthread_attr_t;
-
-int pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg, u_int threadmain);
-void pthread_exit(void *ret_val);
-int pthread_cancel(pthread_t thread);
-int pthread_join(pthread_t thread, void **ret_val);
 
 #define PTH_RUNNING 1
 #define PTH_FINISHED 2

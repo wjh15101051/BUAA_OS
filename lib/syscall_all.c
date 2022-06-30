@@ -5,6 +5,7 @@
 #include <pmap.h>
 #include <sched.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 extern char *KERNEL_SP;
 extern struct Env *curenv;
@@ -96,7 +97,7 @@ int sys_env_destroy(int sysno, u_int envid)
 
 	if ((r = envid2env(envid, &e, 0)) < 0) return r;
 
-	printf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+	// printf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
 	env_destroy(e);
 	return 0;
 }
@@ -474,25 +475,83 @@ int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 	return 0;
 }
 
-int sys_pthread_create(int sysno, pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg, u_int threadmain) {
-    return pthread_create(thread, attr, start_routine, arg, threadmain);
-}
-
 void sys_pthread_exit(int sysno, void *retval) {
-    pthread_exit(retval);
+    printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
 int sys_pthread_cancel(int sysno, pthread_t thread) {
-    return pthread_cancel(thread);
+    printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    return 0;
 }
 
 int sys_pthread_join(int sysno, pthread_t thread, void ** retval) {
-    return pthread_join(thread, retval);
+    printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    return 0;
 }
 
 void sys_pthread_finish() {
-    struct Pthread *pth;
-    pth = pthreads + (u_int) (curenv - envs);
-    env_destroy(curenv);
-    pth->pth_status = PTH_FINISHED;
+    printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+}
+
+int sys_pthread_alloc() {
+    struct Env * pthenv;
+    if (pthread_alloc(&pthenv) < 0) return -PTH_AGAIN;
+    pthenv->env_pri = 1;
+    return pthenv->env_id;
+}
+
+struct Env * tmp;
+
+struct Pthread * thread2pthread(pthread_t thread) {
+    int envid = (thread == 0 ? curenv->env_id : thread);
+    return (pthreads + (u_int) ENVX(envid));
+}
+
+int sys_set_pth_status(int sysno, pthread_t pthread, u_int status) {
+    // printf("sys_set_pth_status %08x %d %08x\n", pthread, status, curenv->env_id);
+    thread2pthread(pthread)->pth_status = status;
+    if (status == PTH_FREE) {
+        thread2pthread(pthread)->env_id = 0;
+    }
+    return 0;
+}
+
+u_int sys_read_pth_status(int sysno, pthread_t pthread) {
+    // printf("sys_read_pth_status %08x %08x\n", pthread, curenv->env_id);
+    return thread2pthread(pthread)->pth_status;
+}
+
+int sys_set_pth_retval(int sysno, pthread_t pthread, u_int retval) {
+    // printf("sys_set_pth_retval %08x %d %08x\n", pthread, retval, curenv->env_id);
+    thread2pthread(pthread)->pth_retval = retval;
+    return 0;
+}
+
+u_int sys_read_pth_retval(int sysno, pthread_t pthread) {
+    // printf("sys_read_pth_retval %08x %08x\n", pthread, curenv->env_id);
+    return thread2pthread(pthread)->pth_retval;
+}
+
+sem_t sys_sem_init(int sysno, u_int pshared, u_int init_val) {
+    return sem_init(pshared, init_val);
+}
+
+void sys_sem_destroy(int sysno, sem_t sem) {
+    sem_destroy(sem);
+}
+
+int sys_sem_trywait(int sysno, sem_t sem) {
+    return sem_trywait(sem);
+}
+
+void sys_sem_wait(int sysno, sem_t sem) {
+    sem_wait(sem);
+}
+
+void sys_sem_post(int sysno, sem_t sem) {
+    sem_post(sem);
+}
+
+int sys_sem_getvalue(int sysno, sem_t sem) {
+    sem_getvalue(sem);
 }

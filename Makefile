@@ -13,12 +13,13 @@ fs_dir		  := fs
 mm_dir		  := mm
 tools_dir	  := tools
 pthread_dir   := pthread
+semaphore_dir := semaphore
 vmlinux_elf	  := gxemul/vmlinux
 user_disk     := gxemul/fs.img
 
 link_script   := $(tools_dir)/scse0_3.lds
 
-modules		  := boot drivers init lib mm user fs pthread
+modules		  := boot drivers init lib mm user fs pthread semaphore
 objects		  := $(boot_dir)/start.o			  \
 				 $(init_dir)/*.o			  \
 			   	 $(drivers_dir)/gxconsole/console.o \
@@ -26,7 +27,8 @@ objects		  := $(boot_dir)/start.o			  \
 				 $(user_dir)/*.x \
 				 $(fs_dir)/*.x \
 				 $(mm_dir)/*.o \
-				 $(pthread_dir)/*.o
+				 $(pthread_dir)/*.o \
+				 $(semaphore_dir)/*.o
 
 .PHONY: all $(modules) clean
 

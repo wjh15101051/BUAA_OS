@@ -3,6 +3,7 @@
 #include <mmu.h>
 #include <env.h>
 #include <trap.h>
+#include <semaphore.h>
 
 void syscall_putchar(char ch)
 {
@@ -87,17 +88,7 @@ void syscall_pthread_finish(void) {
     msyscall(SYS_pthread_finish, 0, 0, 0, 0, 0);
 }
 
-void threadmain(void * (*start_routine) (void *), void * arg) {
-    start_routine(arg);
-    writef("syscall_pthread_finish in threadmain!!!\n");
-    syscall_pthread_finish();
-}
-
 extern struct Pthread* pthreads;
-
-int syscall_pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg) {
-    return msyscall(SYS_pthread_create, thread, attr, start_routine, arg, threadmain);
-}
 
 void syscall_pthread_exit(void *retval) {
     msyscall(SYS_pthread_exit, retval, 0, 0, 0, 0);
@@ -109,4 +100,48 @@ int syscall_pthread_cancel(pthread_t thread) {
 
 int syscall_pthread_join(pthread_t thread, void **retval) {
     return msyscall(SYS_pthread_join, thread, retval, 0, 0, 0);
+}
+
+int syscall_pthread_alloc() {
+    return msyscall(SYS_pthread_alloc, 0, 0, 0, 0, 0);
+}
+
+int syscall_set_pth_status(pthread_t pthread, u_int status) {
+    return msyscall(SYS_set_pth_status, pthread, status, 0, 0, 0);
+}
+
+u_int syscall_read_pth_status(pthread_t pthread) {
+    return msyscall(SYS_read_pth_status, pthread, 0, 0, 0, 0);
+}
+
+int syscall_set_pth_retval(pthread_t pthread, u_int retval) {
+    return msyscall(SYS_set_pth_retval, pthread, retval, 0, 0, 0);
+}
+
+u_int syscall_read_pth_retval(pthread_t pthread) {
+    return msyscall(SYS_read_pth_retval, pthread, 0, 0, 0, 0);
+}
+
+sem_t syscall_sem_init(u_int pshared, u_int init_val) {
+    return msyscall(SYS_sem_init, pshared, init_val, 0, 0, 0);
+}
+
+void syscall_sem_destroy(sem_t sem) {
+    msyscall(SYS_sem_destroy, sem, 0, 0, 0, 0);
+}
+
+int syscall_sem_trywait(sem_t sem) {
+    return msyscall(SYS_sem_trywait, sem, 0, 0, 0, 0);
+}
+
+void syscall_sem_wait(sem_t sem) {
+    msyscall(SYS_sem_wait, sem, 0, 0, 0, 0);
+}
+
+void syscall_sem_post(sem_t sem) {
+    msyscall(SYS_sem_post, sem, 0, 0, 0, 0);
+}
+
+int syscall_sem_getvalue(sem_t sem) {
+    msyscall(SYS_sem_getvalue, sem, 0, 0, 0, 0);
 }
