@@ -7,12 +7,14 @@
 #include <env.h>
 #include <args.h>
 #include <unistd.h>
+#include <pthread.h>
 /////////////////////////////////////////////////////head
 extern void umain();
 extern void libmain();
 extern void exit();
 
 extern struct Env *env;
+extern struct Pthread *pthreads;
 
 
 #define USED(x) (void)(x)
@@ -32,6 +34,10 @@ __attribute__((noreturn));
 
 #define user_panic(...) _user_panic(__FILE__, __LINE__, __VA_ARGS__)
 
+int pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg);
+void pthread_exit(void *ret_val);
+int pthread_cancel(pthread_t thread);
+int pthread_join(pthread_t thread, void **ret_val);
 
 /////////////////////////////////////////////////////fork spawn
 int spawn(char *prog, char **argv);

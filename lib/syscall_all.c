@@ -4,9 +4,11 @@
 #include <printf.h>
 #include <pmap.h>
 #include <sched.h>
+#include <pthread.h>
 
 extern char *KERNEL_SP;
 extern struct Env *curenv;
+extern struct Pthread *pthreads;
 
 /* Overview:
  * 	This function is used to print a character on screen.
@@ -470,4 +472,27 @@ int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
     if (checked == 0) return -E_INVAL;
     bcopy((void *) target_addr, (void *) va, len);
 	return 0;
+}
+
+int sys_pthread_create(int sysno, pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg, u_int threadmain) {
+    return pthread_create(thread, attr, start_routine, arg, threadmain);
+}
+
+void sys_pthread_exit(int sysno, void *retval) {
+    pthread_exit(retval);
+}
+
+int sys_pthread_cancel(int sysno, pthread_t thread) {
+    return pthread_cancel(thread);
+}
+
+int sys_pthread_join(int sysno, pthread_t thread, void ** retval) {
+    return pthread_join(thread, retval);
+}
+
+void sys_pthread_finish() {
+    struct Pthread *pth;
+    pth = pthreads + (u_int) (curenv - envs);
+    env_destroy(curenv);
+    pth->pth_status = PTH_FINISHED;
 }

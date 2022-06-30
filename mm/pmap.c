@@ -3,6 +3,7 @@
 #include "printf.h"
 #include "env.h"
 #include "error.h"
+#include "pthread.h"
 
 
 /* These variables are set by mips_detect_memory() */
@@ -146,6 +147,7 @@ void mips_vm_init()
 	extern char end[];
 	extern int mCONTEXT;
 	extern struct Env *envs;
+    extern struct Pthread *pthreads;
 
 	Pde *pgdir;
 	u_int n;
@@ -171,6 +173,8 @@ void mips_vm_init()
 	envs = (struct Env *)alloc(NENV * sizeof(struct Env), BY2PG, 1);
 	n = ROUND(NENV * sizeof(struct Env), BY2PG);
 	boot_map_segment(pgdir, UENVS, n, PADDR(envs), PTE_R);
+
+    pthreads = (struct Pthread *) alloc(NENV * sizeof(struct Pthread), BY2PG, 1);
 
 	printf("pmap.c:\t mips vm init success\n");
 }
@@ -421,6 +425,7 @@ void page_remove(Pde *pgdir, u_long va)
 	/* Hint: When there's no virtual address mapped to this page, release it. */
 	ppage->pp_ref--;
 	if (ppage->pp_ref == 0) {
+        printf("page free : %08x\n", va);
 		page_free(ppage);
 	}
 

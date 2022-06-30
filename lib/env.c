@@ -12,7 +12,7 @@
 struct Env *envs = NULL;        // All environments
 struct Env *curenv = NULL;            // the current env
 
-static struct Env_list env_free_list;    // Free list
+struct Env_list env_free_list;    // Free list
 struct Env_list env_sched_list[2];      // Runnable list
  
 extern Pde *boot_pgdir;
@@ -483,7 +483,7 @@ extern void lcontext(u_int contxt);
  */
 /*** exercise 3.10 ***/
 void env_run(struct Env *e)
-{// printf("env_run\n");
+{printf("env_run : %08x\n", e->env_id);
     /* Step 1: save register state of curenv. */
     /* Hint: if there is an environment running, 
      *   you should switch the context and save the registers. 

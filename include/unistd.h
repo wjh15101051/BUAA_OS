@@ -22,5 +22,10 @@
 #define SYS_cgetc		((__SYSCALL_BASE ) + (14 ) )
 #define SYS_write_dev		((__SYSCALL_BASE ) + (15) )
 #define SYS_read_dev		((__SYSCALL_BASE ) + (16) )
+#define SYS_pthread_create		((__SYSCALL_BASE ) + (17) )
+#define SYS_pthread_exit		((__SYSCALL_BASE ) + (18) )
+#define SYS_pthread_cancel		((__SYSCALL_BASE ) + (19) )
+#define SYS_pthread_join		((__SYSCALL_BASE ) + (20) )
+#define SYS_pthread_finish      ((__SYSCALL_BASE ) + (21) )
 
 #endif

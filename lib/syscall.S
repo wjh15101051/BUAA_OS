@@ -72,3 +72,8 @@ sys_call_table:                         // Syscall Table
     .word sys_cgetc
     .word sys_write_dev
     .word sys_read_dev
+    .word sys_pthread_create
+    .word sys_pthread_exit
+    .word sys_pthread_cancel
+    .word sys_pthread_join
+    .word sys_pthread_finish

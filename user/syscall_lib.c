@@ -82,3 +82,31 @@ int syscall_read_dev(u_int va,u_int dev,u_int offset)
 {
     return msyscall(SYS_read_dev, va, dev, offset, 0, 0);
 }
+
+void syscall_pthread_finish(void) {
+    msyscall(SYS_pthread_finish, 0, 0, 0, 0, 0);
+}
+
+void threadmain(void * (*start_routine) (void *), void * arg) {
+    start_routine(arg);
+    writef("syscall_pthread_finish in threadmain!!!\n");
+    syscall_pthread_finish();
+}
+
+extern struct Pthread* pthreads;
+
+int syscall_pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg) {
+    return msyscall(SYS_pthread_create, thread, attr, start_routine, arg, threadmain);
+}
+
+void syscall_pthread_exit(void *retval) {
+    msyscall(SYS_pthread_exit, retval, 0, 0, 0, 0);
+}
+
+int syscall_pthread_cancel(pthread_t thread) {
+    return msyscall(SYS_pthread_cancel, thread, 0, 0, 0, 0);
+}
+
+int syscall_pthread_join(pthread_t thread, void **retval) {
+    return msyscall(SYS_pthread_join, thread, retval, 0, 0, 0);
+}

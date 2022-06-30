@@ -46,6 +46,7 @@ void sched_yield(void)
     //printf("Sched_yield End\n");
     */
     //printf("Sched_yield happen\n");
+    printf("sched yield !!!!!\n");
     static int cur_lasttime = 1;
     static int cur_head_index = 0;
     struct Env *next_env;

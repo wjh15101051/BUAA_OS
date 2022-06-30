@@ -16,11 +16,14 @@ USERLIB := printf.o \
 		wait.o \
 		spawn.o \
 		console.o \
-		fprintf.o
+		fprintf.o \
+		pthread.o
 
 CFLAGS += -nostdlib -static
 
-all: echo.x echo.b num.x num.b testptelibrary.b testptelibrary.x testarg.b testpipe.x testpiperace.x icode.x init.b sh.b cat.b ls.b\
+all: pthtestcreateandjoin.x pthtestcreateandjoin.b \
+	pthtestexitandjoin.x pthtestexitandjoin.b \
+	echo.x echo.b num.x num.b testptelibrary.b testptelibrary.x testarg.b testpipe.x testpiperace.x icode.x init.b sh.b cat.b ls.b\
 	devtst.x devtst.b tltest.x tltest.b fktest.x fktest.b pingpong.x pingpong.b idle.x fstest.x fstest.b $(USERLIB) entry.o syscall_wrap.o
 
 %.x: %.b.c 

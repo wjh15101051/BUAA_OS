@@ -12,19 +12,21 @@ lib_dir		  := lib
 fs_dir		  := fs
 mm_dir		  := mm
 tools_dir	  := tools
+pthread_dir   := pthread
 vmlinux_elf	  := gxemul/vmlinux
 user_disk     := gxemul/fs.img
 
 link_script   := $(tools_dir)/scse0_3.lds
 
-modules		  := boot drivers init lib mm user fs
+modules		  := boot drivers init lib mm user fs pthread
 objects		  := $(boot_dir)/start.o			  \
 				 $(init_dir)/*.o			  \
 			   	 $(drivers_dir)/gxconsole/console.o \
 				 $(lib_dir)/*.o				  \
 				 $(user_dir)/*.x \
 				 $(fs_dir)/*.x \
-				 $(mm_dir)/*.o
+				 $(mm_dir)/*.o \
+				 $(pthread_dir)/*.o
 
 .PHONY: all $(modules) clean
 
