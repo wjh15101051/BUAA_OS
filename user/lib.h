@@ -36,7 +36,7 @@ __attribute__((noreturn));
 #define user_panic(...) _user_panic(__FILE__, __LINE__, __VA_ARGS__)
 
 int pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine) (void *), void * arg);
-void pthread_exit(void *ret_val);
+void pthread_destroy(int envid);
 int pthread_cancel(pthread_t thread);
 int pthread_join(pthread_t thread, void **ret_val);
 int syscall_pthread_alloc(void);

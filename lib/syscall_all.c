@@ -475,8 +475,30 @@ int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 	return 0;
 }
 
-void sys_pthread_exit(int sysno, void *retval) {
-    printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+extern void asid_free(u_int i);
+
+void sys_pthread_destroy(int sysno, int envid) {
+    int r;
+    struct Env *e;
+
+    if ((r = envid2env(envid, &e, 0)) < 0) return r;
+    e->env_pgdir = 0;
+    e->env_cr3 = 0;
+    asid_free(e->env_id >> (1 + LOG2NENV));
+    e->env_status = ENV_FREE;
+    LIST_INSERT_HEAD(&env_free_list, e, env_link);
+    LIST_REMOVE(e, env_sched_link);
+
+    /* Hint: schedule to run a new environment. */
+    if (curenv == e) {
+        curenv = NULL;
+        /* Hint: Why this? */
+        bcopy((void *)KERNEL_SP - sizeof(struct Trapframe),
+              (void *)TIMESTACK - sizeof(struct Trapframe),
+              sizeof(struct Trapframe));
+        // printf("i am killed ... \n");
+        sched_yield();
+    }
 }
 
 int sys_pthread_cancel(int sysno, pthread_t thread) {

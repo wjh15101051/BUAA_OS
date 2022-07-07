@@ -18,7 +18,7 @@ struct Env_list env_sched_list[2];      // Runnable list
 extern Pde *boot_pgdir;
 extern char *KERNEL_SP;
 
-static u_int asid_bitmap[2] = {0}; // 64
+u_int asid_bitmap[2] = {0}; // 64
 
 /* Overview:
  *  This function is to allocate an unused ASID
@@ -49,7 +49,7 @@ static u_int asid_alloc() {
  * Post-Condition:
  *  ASID is free and can be allocated again later
  */
-static void asid_free(u_int i) {
+void asid_free(u_int i) {
 	int index, inner;
 	index = i >> 5;
 	inner = i & 31;
@@ -483,7 +483,7 @@ extern void lcontext(u_int contxt);
  */
 /*** exercise 3.10 ***/
 void env_run(struct Env *e)
-{printf("env_run : %08x\n", e->env_id);
+{//printf("env_run : %08x\n", e->env_id);
     /* Step 1: save register state of curenv. */
     /* Hint: if there is an environment running, 
      *   you should switch the context and save the registers. 

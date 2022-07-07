@@ -16,16 +16,17 @@ void mips_init() {
 
 	//ENV_CREATE(user_fktest);
 	//ENV_CREATE(user_pingpong);
-	//ENV_CREATE(user_testpiperace);
+	//ENV_CREATE(user_testpipe);
 	//ENV_CREATE(user_testpiperace);
 	//ENV_CREATE(user_testptelibrary);
 	//ENV_CREATE(user_icode);
-	//ENV_CREATE(fs_serv);
+    //ENV_CREATE(fs_serv);
     //ENV_CREATE(user_pthtestcreateandjoin);
     //ENV_CREATE(user_pthtestexitandjoin);
-    //ENV_CREATE(user_pthtestcancel);
+    ENV_CREATE(user_pthtestcancel);
     //ENV_CREATE(user_semtest);
-    ENV_CREATE(user_semtestthread);
+    //ENV_CREATE(user_semtestthread);
+    //ENV_CREATE(user_pthtestthreadcreatethread);
 
 	trap_init();
 	kclock_init();
@@ -33,7 +34,8 @@ void mips_init() {
 
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");
-}
+}g
+
 
 void bcopy(const void *src, void *dst, size_t len) {
 	void *max = dst + len;

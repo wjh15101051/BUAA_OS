@@ -93,7 +93,9 @@ int pthread_alloc(struct Env **new) {
         }
     }
 
-    if (pthread_setup_vm(e) < 0) return -PTH_AGAIN;
+    //if (pthread_setup_vm(e) < 0) return -PTH_AGAIN;
+    e->env_cr3 = curenv->env_cr3;
+    e->env_pgdir = curenv->env_pgdir;
 
     e->env_id = mkenvid(e);
     // printf("thread env id : %d\n", e->env_id);

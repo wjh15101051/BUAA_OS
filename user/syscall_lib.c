@@ -90,8 +90,8 @@ void syscall_pthread_finish(void) {
 
 extern struct Pthread* pthreads;
 
-void syscall_pthread_exit(void *retval) {
-    msyscall(SYS_pthread_exit, retval, 0, 0, 0, 0);
+void syscall_pthread_destroy(int envid) {
+    msyscall(SYS_pthread_destroy, envid, 0, 0, 0, 0);
 }
 
 int syscall_pthread_cancel(pthread_t thread) {

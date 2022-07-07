@@ -1,7 +1,5 @@
 #include "lib.h"
 
-int a[2] = {15,22};
-
 void *add(void * a) {
     int * x = (int *) a;
     int res = x[0] + x[1];
@@ -11,6 +9,7 @@ void *add(void * a) {
 
 void umain() {
     writef("===========================================\n");
+    int a[2] = {15,22};
     pthread_t thread;
     int iret;
     iret = pthread_create(&thread, NULL, add, (void *) a);
